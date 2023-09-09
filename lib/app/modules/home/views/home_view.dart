@@ -45,7 +45,7 @@ class HomeView extends GetView<HomeController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pemrograman Mobile 2'),
+        title: const Text('Add Mahasiswa'),
         centerTitle: true,
         actions: [
           IconButton(onPressed: () => cAuth.logout(), icon: Icon(Icons.logout))
@@ -76,32 +76,39 @@ class HomeView extends GetView<HomeController> {
 
       //2.Menampilkan data secara realtime
       body: StreamBuilder<QuerySnapshot<Object?>>(
-        stream: controller.streamData(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.active) {
-            // mengambil data
-            var listAllDocs = snapshot.data!.docs;
-            return ListView.builder(
-              itemCount: listAllDocs.length,
-              itemBuilder: (context, index) => ListTile(
-                leading: CircleAvatar(
-                  child: Text('${index + 1}'),
-                  backgroundColor: Colors.white,
-                ),
-                title: Text(
-                    "${(listAllDocs[index].data() as Map<String, dynamic>)["name"]}"),
-                subtitle: Text(
-                    "${(listAllDocs[index].data() as Map<String, dynamic>)["price"]}"),
-                trailing:
-                    IconButton(onPressed: () => showOption(listAllDocs[index].id), icon: Icon(Icons.more_vert)),
-              ),
-            );
-          }
-          return Center(
-            child: CircularProgressIndicator(),
+  stream: FirebaseFirestore.instance.collection('mahasiswa').snapshots(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.active) {
+      var listAllDocs = snapshot.data!.docs;
+      return ListView.builder(
+        itemCount: listAllDocs.length,
+        itemBuilder: (context, index) {
+          var data = listAllDocs[index].data() as Map<String, dynamic>;
+          return ListTile(
+            leading: CircleAvatar(
+              child: Text('${index + 1}'),
+              backgroundColor: Colors.white,
+            ),
+            title: Text("Nama: ${data["nama"]}"),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("NPM: ${data["npm"]}"),
+              ],
+            ),
+            trailing: IconButton(
+              onPressed: () => showOption(listAllDocs[index].id),
+              icon: Icon(Icons.more_vert),
+            ),
           );
         },
-      ),
+      );
+    }
+    return Center(
+      child: CircularProgressIndicator(),
+    );
+  },
+),
       floatingActionButton: FloatingActionButton(
         onPressed: ()=>Get.toNamed(Routes.ADD_PRODUCT),
         child: Icon(Icons.add),
